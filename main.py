@@ -58,26 +58,31 @@ class Bird(pygame.sprite.Sprite):
         self.clicked = False
     
     def update(self):
-        self.vel += .5
-        if self.vel > 8:
-            self.vel = 8
-        if self.rect.y <= 660:
-            self.animate_bird()
-            self.rect.y += self.vel
-        else:
-            self.image = pygame.transform.rotate(self.images[self.index], -80)
-            flying = False
-            game_over = True
+        global flying
+        global game_over
 
-        
-        if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False and self.rect.y > 0:
-            self.vel = -10
-            self.clicked = True
-            self.image = pygame.transform.rotate(self.images[self.index], 25)
+        if not game_over:
+            if flying:
+                self.vel += .5
+                if self.vel > 8:
+                    self.vel = 8
+            if self.rect.y <= 660:
+                self.animate_bird()
+                self.rect.y += self.vel
+            else:
+                self.image = pygame.transform.rotate(self.images[self.index], -80)
+                flying = False
+                game_over = True
 
-        if pygame.mouse.get_pressed()[0] == 0:
-            self.clicked = False
-    
+            
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False and self.rect.y > 0:
+                self.vel = -10
+                self.clicked = True
+                self.image = pygame.transform.rotate(self.images[self.index], 25)
+
+            if pygame.mouse.get_pressed()[0] == 0:
+                self.clicked = False
+
     def animate_bird(self):
         #Animate Wings
         if not game_over:
@@ -109,9 +114,10 @@ while run == True:
 
     #Draw and scroll the ground
     screen.blit(ground_image, (ground_scroll, 680))
-    ground_scroll -= scroll_speed
-    if abs(ground_scroll) > 25:
-        ground_scroll = 0
+    if not game_over:
+        ground_scroll -= scroll_speed
+        if abs(ground_scroll) > 25:
+            ground_scroll = 0
 
 
     for event in pygame.event.get():
