@@ -116,13 +116,15 @@ class Pipe(pygame.sprite.Sprite):
         global scroll_speed
         if not game_over:
             self.rect.x -= scroll_speed
+        if self.rect.right < 0:
+            self.kill()
         
 
 bird_group = pygame.sprite.Group()
 pipe_group = pygame.sprite.Group()
 
 flappy = Bird(50, screen_height // 2)
-bird_group.add_internal(flappy)
+bird_group.add(flappy)
 
 run = True
 while run == True:
@@ -136,6 +138,10 @@ while run == True:
     bird_group.update()
     pipe_group.draw(screen)
     pipe_group.update()
+
+    #Check for collision
+    if pygame.sprite.groupcollide(bird_group, pipe_group, False, False):
+        game_over = True
 
     #Draw and scroll the ground
     screen.blit(ground_image, (ground_scroll, 680))
@@ -152,8 +158,8 @@ while run == True:
                 pipe_offset = random.randint(-125, 125)
                 top_pipe = Pipe(screen_width, (screen_height // 2) + pipe_offset, 1)
                 btm_pipe = Pipe(screen_width, (screen_height // 2) + pipe_offset, -1)
-                pipe_group.add_internal(top_pipe)
-                pipe_group.add_internal(btm_pipe)
+                pipe_group.add(top_pipe)
+                pipe_group.add(btm_pipe)
                 last_pipe = now
 
     for event in pygame.event.get():
