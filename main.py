@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+import random
 
 pygame.init()
 
@@ -145,13 +146,15 @@ while run == True:
             ground_scroll = 0
 
         #Scroll the pipes:
-        now = pygame.time.get_ticks()
-        if now - last_pipe > pipe_refresh:
-            top_pipe = Pipe(screen_width, screen_height // 2, 1)
-            btm_pipe = Pipe(screen_width, screen_height // 2, -1)
-            pipe_group.add_internal(top_pipe)
-            pipe_group.add_internal(btm_pipe)
-            last_pipe = now
+        if flying:
+            now = pygame.time.get_ticks()
+            if now - last_pipe > pipe_refresh:
+                pipe_offset = random.randint(-125, 125)
+                top_pipe = Pipe(screen_width, (screen_height // 2) + pipe_offset, 1)
+                btm_pipe = Pipe(screen_width, (screen_height // 2) + pipe_offset, -1)
+                pipe_group.add_internal(top_pipe)
+                pipe_group.add_internal(btm_pipe)
+                last_pipe = now
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
