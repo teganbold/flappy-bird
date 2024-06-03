@@ -27,6 +27,12 @@ ground_image = pygame.image.load("sprites/base.png")
 ground_image = pygame.transform.scale(ground_image, (400, 140))
 bg_rect = bg_image.get_rect()
 
+game_start_image = pygame.image.load("sprites/message.png")
+game_start_rect = game_start_image.get_rect()
+
+game_over_image = pygame.image.load("sprites/gameover.png")
+game_over_rect = game_over_image.get_rect()
+
 # Initiate the screen
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Flappy Bird")
@@ -82,6 +88,7 @@ class Bird(pygame.sprite.Sprite):
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False and self.rect.y > 0:
                 self.vel = -10
                 self.clicked = True
+                pygame.mixer.Sound("audio/wing.wav").play().set_volume(0.1)
                 self.image = pygame.transform.rotate(self.images[self.index], 25)
 
             if pygame.mouse.get_pressed()[0] == 0:
@@ -126,6 +133,15 @@ pipe_group = pygame.sprite.Group()
 flappy = Bird(50, screen_height // 2)
 bird_group.add(flappy)
 
+
+
+def reset_game():
+    pipe_group.empty()
+    bird_group.empty()
+    flappy = Bird(50, screen_height // 2)
+    bird_group.add(flappy)
+
+
 run = True
 while run == True:
     #Set the framerate
@@ -134,13 +150,28 @@ while run == True:
     #Draw the background
     screen.blit(bg_image, (0,0), bg_rect)
 
+
     bird_group.draw(screen)
     bird_group.update()
     pipe_group.draw(screen)
     pipe_group.update()
 
+
+    if not game_over and not flying:
+        screen.blit(game_start_image, ((screen_width //2) - (game_start_rect.width // 2), 100 ), game_start_rect)
+
+    if game_over:
+        screen.blit(game_over_image, ((screen_width //2) - (game_over_rect.width // 2), 200 ), game_over_rect)
+        reset_click = False
+        if pygame.mouse.get_pressed()[0] == 1:
+            reset_game()
+            game_over = False
+            flying = True
+
     #Check for collision
     if pygame.sprite.groupcollide(bird_group, pipe_group, False, False):
+        if game_over == False:
+            pygame.mixer.Sound("audio/hit.wav").play()
         game_over = True
 
     #Draw and scroll the ground
