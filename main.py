@@ -13,7 +13,7 @@ screen_width = 375
 ground_scroll = 0
 scroll_speed = 4
 pipe_gap = 150
-pipe_refresh = 1500 #miliseconds
+pipe_refresh = 1000 #miliseconds
 last_pipe = pygame.time.get_ticks()
 flying = False
 game_over = False
@@ -113,21 +113,15 @@ class Pipe(pygame.sprite.Sprite):
 
     def update(self):
         global scroll_speed
-        self.rect.x -= scroll_speed
+        if not game_over:
+            self.rect.x -= scroll_speed
         
 
 bird_group = pygame.sprite.Group()
 pipe_group = pygame.sprite.Group()
 
 flappy = Bird(50, screen_height // 2)
-top_pipe = Pipe(250, screen_height // 2, 1)
-btm_pipe = Pipe(250, screen_height // 2, -1)
-
 bird_group.add_internal(flappy)
-pipe_group.add_internal(top_pipe)
-pipe_group.add_internal(btm_pipe)
-
-
 
 run = True
 while run == True:
@@ -149,6 +143,15 @@ while run == True:
         ground_scroll -= scroll_speed
         if abs(ground_scroll) > 25:
             ground_scroll = 0
+
+        #Scroll the pipes:
+        now = pygame.time.get_ticks()
+        if now - last_pipe > pipe_refresh:
+            top_pipe = Pipe(screen_width, screen_height // 2, 1)
+            btm_pipe = Pipe(screen_width, screen_height // 2, -1)
+            pipe_group.add_internal(top_pipe)
+            pipe_group.add_internal(btm_pipe)
+            last_pipe = now
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
