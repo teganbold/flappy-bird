@@ -10,6 +10,10 @@ clock = pygame.time.Clock()
 screen_height = 812
 screen_width = 375
 
+#Define font
+font = pygame.font.SysFont("Bauhaus 93", 60, )
+white = (255, 255, 255)
+
 #Game Variables
 ground_scroll = 0
 scroll_speed = 4
@@ -18,6 +22,9 @@ pipe_refresh = 1000 #miliseconds
 last_pipe = pygame.time.get_ticks()
 flying = False
 game_over = False
+score = 0
+pass_pipe = False
+bird_color = "yellow"
 
 # Load Background and Scrolling Ground
 bg_image = pygame.image.load("sprites/background-day.png")
@@ -37,30 +44,35 @@ game_over_rect = game_over_image.get_rect()
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Flappy Bird")
 
+def draw_text(text, font, txt_color, x, y):
+    img = font.render(text, True, txt_color)
+    screen.blit(img, (x, y))
+
+
 class Bird(pygame.sprite.Sprite):
     def __init__(self, x, y) -> None:
         pygame.sprite.Sprite.__init__(self)
         self.images = []
         self.index = 0
-        self.images.append(pygame.image.load("sprites/redbird-upflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-upflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-upflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-upflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-midflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-midflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-midflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-midflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-midflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-downflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-downflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-downflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-downflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-downflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-downflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-downflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-downflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-downflap.png"))
-        self.images.append(pygame.image.load("sprites/redbird-downflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-upflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-upflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-upflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-upflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-midflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-midflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-midflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-midflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-midflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-downflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-downflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-downflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-downflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-downflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-downflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-downflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-downflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-downflap.png"))
+        self.images.append(pygame.image.load(f"sprites/{bird_color}bird-downflap.png"))
         self.image = self.images[self.index]
         self.rect = self.image.get_rect()
         self.rect.center = [x,y]
@@ -136,8 +148,12 @@ bird_group.add(flappy)
 
 
 def reset_game():
+    global score
+    global pass_pipe
     pipe_group.empty()
     bird_group.empty()
+    score = 0
+    pass_pipe = False
     flappy = Bird(50, screen_height // 2)
     bird_group.add(flappy)
 
@@ -167,6 +183,20 @@ while run == True:
             reset_game()
             game_over = False
             flying = True
+
+    #Check the score
+    if len(pipe_group) > 0:
+        if (bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.left and
+            bird_group.sprites()[0].rect.right < pipe_group.sprites()[0].rect.right and 
+            pass_pipe == False):
+            pass_pipe = True
+        if pass_pipe == True:
+            if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.right:
+                score += 1
+                pygame.mixer.Sound("audio/point.wav").play().set_volume(0.2)
+                pass_pipe = False
+        
+    draw_text(str(score), font, white, screen_width // 2, 20)
 
     #Check for collision
     if pygame.sprite.groupcollide(bird_group, pipe_group, False, False):
