@@ -139,7 +139,6 @@ class Pipe(pygame.sprite.Sprite):
             self.rect.x -= scroll_speed
         if self.rect.right < 0:
             self.kill()
-        
 
 bird_group = pygame.sprite.Group()
 pipe_group = pygame.sprite.Group()
@@ -181,9 +180,7 @@ class StartButton(pygame.sprite.Sprite):
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1:
-                print("Starting Game...")
                 flying = True
-    
 
 def reset_game():
     global score
@@ -194,7 +191,6 @@ def reset_game():
     pass_pipe = False
     bird_group.add(Bird(50, screen_height // 2))
 
-
 run = True
 while run == True:
     #Set the framerate
@@ -202,14 +198,12 @@ while run == True:
 
     #Draw the background
     screen.blit(bg_image, (0,0), bg_rect)
-
-
     bird_group.draw(screen)
     bird_group.update()
     pipe_group.draw(screen)
     pipe_group.update()
 
-
+    # Display Opening Menu
     if not game_over and not flying:
         screen.blit(game_start_image, ((screen_width //2) - (game_start_rect.width // 2), 100 ), game_start_rect)
 
@@ -225,7 +219,7 @@ while run == True:
         yellow_bird.select()
         blue_bird.select()
         
-        start_button = StartButton(250, 600)
+        start_button = StartButton(screen_width // 2, 600)
         start_button_group.add(start_button)
         start_button_group.draw(screen)
         start_button.click_to_start()
@@ -281,12 +275,7 @@ while run == True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-        if event.type == pygame.MOUSEBUTTONDOWN and flying == False and game_over == False:
-            # flying = True
-            pass
-            
 
-    
     pygame.display.update()
 
 pygame.quit()
