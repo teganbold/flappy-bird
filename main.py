@@ -13,6 +13,7 @@ screen_width = 375
 #Define font
 font_outline = pygame.font.Font("font/flappy.ttf", 60)
 font_filled = pygame.font.Font("font/flappy_filled.ttf", 60)
+font_text = pygame.font.Font("font/flap.ttf", 45)
 white = (255, 255, 255)
 black = (0, 0, 0)
 
@@ -26,7 +27,6 @@ flying = False
 game_over = False
 score = 0
 pass_pipe = False
-bird_color = "yellow"
 
 # Load Background and Scrolling Ground
 bg_image = pygame.image.load("sprites/background-day.png")
@@ -50,17 +50,9 @@ def draw_text(text, font, txt_color, x, y):
     img = font.render(text, True, txt_color)
     screen.blit(img, (x, y))
 
-class BirdSelector(pygame.sprite.Sprite):
-    def __init__(self) -> None:
-        pygame.sprite.Sprite.__init__(self)
-        self.images = []
-        self.images.append(pygame.image.load("sprites/redbird-midflap.png"))
-        self.images.append(pygame.image.load("sprites/yellowbird-midflap.png"))
-        self.images.append(pygame.image.load("sprites/bluebird-midflap.png"))
-
 
 class Bird(pygame.sprite.Sprite):
-    def __init__(self, x, y) -> None:
+    def __init__(self, x, y, bird_color = "yellow") -> None:
         pygame.sprite.Sprite.__init__(self)
         self.images = []
         self.index = 0
@@ -107,7 +99,7 @@ class Bird(pygame.sprite.Sprite):
                 game_over = True
 
             
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False and self.rect.y > 0:
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False and self.rect.y > 0 and flying == True:
                 self.vel = -10
                 self.clicked = True
                 pygame.mixer.Sound("audio/wing.wav").play().set_volume(0.1)
@@ -152,10 +144,46 @@ class Pipe(pygame.sprite.Sprite):
 bird_group = pygame.sprite.Group()
 pipe_group = pygame.sprite.Group()
 bird_selector = pygame.sprite.Group()
+start_button_group = pygame.sprite.Group()
 
 bird_group.add(Bird(50, screen_height // 2))
 
+class BirdSelector(pygame.sprite.Sprite):
+    def __init__(self, color, x, y) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(f"sprites/{color}bird-midflap.png")
+        self.rect = self.image.get_rect()
+        self.rect.left = x
+        self.rect.top = y
+        self.color = color
+        self.clicked = False
 
+    def select(self):
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.clicked = True
+                bird_group.empty()
+                bird_group.add(Bird(50, screen_height // 2, self.color))
+            
+            if pygame.mouse.get_pressed()[0] == 0:
+                self.clicked = False
+
+class StartButton(pygame.sprite.Sprite):
+    def __init__(self, x, y) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("sprites/start.png")
+        self.rect = self.image.get_rect()
+        self.rect.center = [x, y]
+
+    def click_to_start(self):
+        global flying
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1:
+                print("Starting Game...")
+                flying = True
+    
 
 def reset_game():
     global score
@@ -184,7 +212,23 @@ while run == True:
 
     if not game_over and not flying:
         screen.blit(game_start_image, ((screen_width //2) - (game_start_rect.width // 2), 100 ), game_start_rect)
+
+        draw_text("Select Your Bird", font_text, black, 75, 450)
+        red_bird = BirdSelector("red", 175, 500)
+        yellow_bird = BirdSelector("yellow", 75, 500)
+        blue_bird = BirdSelector("blue", 275, 500)
+        bird_selector.add(red_bird)
+        bird_selector.add(yellow_bird)
+        bird_selector.add(blue_bird)
+        bird_selector.draw(screen)
+        red_bird.select()
+        yellow_bird.select()
+        blue_bird.select()
         
+        start_button = StartButton(250, 600)
+        start_button_group.add(start_button)
+        start_button_group.draw(screen)
+        start_button.click_to_start()
 
     if game_over:
         screen.blit(game_over_image, ((screen_width //2) - (game_over_rect.width // 2), 200 ), game_over_rect)
@@ -200,8 +244,7 @@ while run == True:
             bird_group.sprites()[0].rect.right < pipe_group.sprites()[0].rect.right and 
             pass_pipe == False):
             pass_pipe = True
-        if pass_pipe == True:
-            if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.right:
+        if pass_pipe == True and bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.right:
                 score += 1
                 pygame.mixer.Sound("audio/point.wav").play().set_volume(0.2)
                 pass_pipe = False
@@ -239,9 +282,11 @@ while run == True:
         if event.type == pygame.QUIT:
             run = False
         if event.type == pygame.MOUSEBUTTONDOWN and flying == False and game_over == False:
-            flying = True
+            # flying = True
+            pass
+            
 
     
     pygame.display.update()
 
-# if __file__ == '__main__':
+pygame.quit()
