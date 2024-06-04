@@ -27,6 +27,7 @@ flying = False
 game_over = False
 score = 0
 pass_pipe = False
+bird_color = "yellow"
 
 # Load Background and Scrolling Ground
 bg_image = pygame.image.load("sprites/background-day.png")
@@ -49,7 +50,6 @@ pygame.display.set_caption("Flappy Bird")
 def draw_text(text, font, txt_color, x, y):
     img = font.render(text, True, txt_color)
     screen.blit(img, (x, y))
-
 
 class Bird(pygame.sprite.Sprite):
     def __init__(self, x, y, bird_color = "yellow") -> None:
@@ -158,11 +158,13 @@ class BirdSelector(pygame.sprite.Sprite):
         self.clicked = False
 
     def select(self):
+        global bird_color
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
                 self.clicked = True
                 bird_group.empty()
+                bird_color = self.color
                 bird_group.add(Bird(50, screen_height // 2, self.color))
             
             if pygame.mouse.get_pressed()[0] == 0:
@@ -189,7 +191,7 @@ def reset_game():
     bird_group.empty()
     score = 0
     pass_pipe = False
-    bird_group.add(Bird(50, screen_height // 2))
+    bird_group.add(Bird(50, screen_height // 2, bird_color))
 
 run = True
 while run == True:
