@@ -11,8 +11,10 @@ screen_height = 812
 screen_width = 375
 
 #Define font
-font = pygame.font.SysFont("Bauhaus 93", 60, )
+font_outline = pygame.font.Font("font/flappy.ttf", 60)
+font_filled = pygame.font.Font("font/flappy_filled.ttf", 60)
 white = (255, 255, 255)
+black = (0, 0, 0)
 
 #Game Variables
 ground_scroll = 0
@@ -47,6 +49,14 @@ pygame.display.set_caption("Flappy Bird")
 def draw_text(text, font, txt_color, x, y):
     img = font.render(text, True, txt_color)
     screen.blit(img, (x, y))
+
+class BirdSelector(pygame.sprite.Sprite):
+    def __init__(self) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        self.images = []
+        self.images.append(pygame.image.load("sprites/redbird-midflap.png"))
+        self.images.append(pygame.image.load("sprites/yellowbird-midflap.png"))
+        self.images.append(pygame.image.load("sprites/bluebird-midflap.png"))
 
 
 class Bird(pygame.sprite.Sprite):
@@ -141,9 +151,9 @@ class Pipe(pygame.sprite.Sprite):
 
 bird_group = pygame.sprite.Group()
 pipe_group = pygame.sprite.Group()
+bird_selector = pygame.sprite.Group()
 
-flappy = Bird(50, screen_height // 2)
-bird_group.add(flappy)
+bird_group.add(Bird(50, screen_height // 2))
 
 
 
@@ -154,8 +164,7 @@ def reset_game():
     bird_group.empty()
     score = 0
     pass_pipe = False
-    flappy = Bird(50, screen_height // 2)
-    bird_group.add(flappy)
+    bird_group.add(Bird(50, screen_height // 2))
 
 
 run = True
@@ -175,6 +184,7 @@ while run == True:
 
     if not game_over and not flying:
         screen.blit(game_start_image, ((screen_width //2) - (game_start_rect.width // 2), 100 ), game_start_rect)
+        
 
     if game_over:
         screen.blit(game_over_image, ((screen_width //2) - (game_over_rect.width // 2), 200 ), game_over_rect)
@@ -195,8 +205,10 @@ while run == True:
                 score += 1
                 pygame.mixer.Sound("audio/point.wav").play().set_volume(0.2)
                 pass_pipe = False
-        
-    draw_text(str(score), font, white, screen_width // 2, 20)
+    
+    if flying:
+        draw_text(str(score), font_filled, white, (screen_width // 2) - 25, 20)
+        draw_text(str(score), font_outline, black, (screen_width // 2) - 25, 20)
 
     #Check for collision
     if pygame.sprite.groupcollide(bird_group, pipe_group, False, False):
